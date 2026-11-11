@@ -13,17 +13,39 @@ import {
 import { FadeIn } from "@/components/site/fade-in";
 import { LeadForm } from "@/components/site/lead-form";
 import { ProductCard } from "@/components/site/product-card";
-import { getProductBySlug, getRelatedProducts } from "@/server/queries";
+import {
+  fetchProductBySlug,
+  fetchProducts,
+  fetchRelatedProducts,
+} from "@/lib/api";
+import type { ProductDto } from "@/lib/types";
 
 type Props = { params: Promise<{ slug: string }> };
 
+/* Товар редактируется в админке — рендерим на каждый запрос, без кэша */
+export const dynamic = "force-dynamic";
+
+async function loadPageData(slug: string) {
+  const page = await fetchProductBySlug(slug);
+  if (!page) return null;
+
+  let related: ProductDto[] = [];
+  try {
+    related = await fetchRelatedProducts(page.product.carModel, page.product.slug);
+  } catch (err) {
+    // Похожие не критичны: страница товара должна открыться и без них
+    console.error("[products/[slug]] похожие товары не загрузились:", err);
+  }
+  return { product: page.product, related };
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const { product } = await getProductBySlug(slug);
-  if (!product) return { title: "Товар не найден" };
+  const page = await fetchProductBySlug(slug);
+  if (!page) return { title: "Товар не найден" };
   return {
-    title: product.title,
-    description: `${product.title} — ${product.material}. Установка без сверления кузова, доставка по всей России.`,
+    title: page.product.title,
+    description: `${page.product.title} — ${page.product.material}. Установка без сверления кузова, доставка по всей России.`,
   };
 }
 
@@ -35,13 +57,10 @@ const GUARANTEES = [
 
 export default async function ProductPage({ params }: Props) {
   const { slug } = await params;
-  const { product } = await getProductBySlug(slug);
-  if (!product) notFound();
+  const data = await loadPageData(slug);
+  if (!data) notFound();
 
-  const { products: related } = await getRelatedProducts(
-    product.carModel,
-    product.slug,
-  );
+  const { product, related } = data;
 
   return (
     <div className="bg-coal">

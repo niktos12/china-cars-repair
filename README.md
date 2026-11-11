@@ -9,21 +9,33 @@
 Преимущества, На заказ (индивидуальное изготовление), Контакты, Админ-панель.
 Название бренда, телефоны, адреса и цены — **заглушки**, заменить на реальные.
 
+## Архитектура
+
+Фронтенд — **чистый клиент API**: своих API-маршрутов и подключения к БД
+у него больше нет. Все данные приходят от отдельного Express-бэкенда
+(репозиторий `china-cars-backend`):
+
+```
+Браузер  <-fetch->  Next.js фронтенд  <-fetch->  Express-бэкенд  <-Drizzle->  PostgreSQL (Neon)
+```
+
+Единственная обязательная переменная окружения — `NEXT_PUBLIC_API_URL`
+(адрес бэкенда). Если она не задана, фронтенд честно покажет ошибку
+«NEXT_PUBLIC_API_URL не задан» вместо молчаливых пустых данных.
+
 ## Стек
 
 | Слой | Технологии |
 |---|---|
 | Фронтенд | Next.js 16 (App Router), TypeScript, Tailwind CSS 4, shadcn/ui |
-| Бэкенд | Next.js API Routes + Server Actions (Node.js runtime) |
-| БД | PostgreSQL + Drizzle ORM (миграции SQL в `drizzle/`) |
-| Валидация | Zod — одна схема для клиента и сервера (`src/lib/validation.ts`) |
-| Данные (фетчи) | SWR (`/products` запрашивает `GET /api/products`) |
+| Бэкенд | отдельный репозиторий: Express 4 + Drizzle ORM + PostgreSQL (Neon) |
+| Запросы | SWR (каталог, списки админки) + fetch (`src/lib/api.ts`) |
+| Авторизация админки | JWT из бэкенда (`POST /api/admin/login`), Bearer-токен в localStorage |
+| Валидация | Zod — схемы форм на клиенте, бэкенд повторно валидирует тем же набором правил |
 | Анимации | framer-motion (появление блоков, мобильное меню) |
-| Шрифт | Comfortaa (кириллица) через next/font |
 | Формы | react-hook-form + @hookform/resolvers |
 | Тосты | sonner |
-| Иконки | lucide-react |
-| Деплой | Railway (Nixpacks, healthcheck, pre-deploy миграции) |
+| Деплой | Vercel: фронт этим репо + бэкенд отдельным Node.js-проектом |
 
 ## Структура
 
@@ -34,154 +46,116 @@ src/
 │   ├── about/                    # О компании (факты, материалы)
 │   ├── products/
 │   │   ├── page.tsx              # Каталог: страница + клиент с SWR, фильтр ?model=
-│   │   └── [slug]/page.tsx       # Карточка товара (SEO-метаданные, заявка с предзаполнением)
+│   │   └── [slug]/page.tsx       # Карточка товара: SSR-фетч с бэкенда + SEO-метаданные
 │   ├── advantages/               # Преимущества и материалы
 │   ├── custom/                   # Индивидуальное изготовление + форма
 │   ├── contacts/                 # Контакты + форма
-│   ├── admin/
-│   │   ├── login/page.tsx        # Вход (логин/пароль из переменных окружения)
-│   │   └── (dashboard)/          # Защищённые страницы (редирект без сессии)
-│   │       ├── page.tsx          #   Обзор: счётчики, последняя заявка
-│   │       ├── products/         #   Список / создание / редактирование / удаление
-│   │       └── leads/            #   Заявки: таблица + удаление
-│   └── api/
-│       ├── products/route.ts     # GET  каталог (JSON)
-│       ├── leads/route.ts        # POST заявка (REST-вариант)
-│       └── health/route.ts       # GET health-check для Railway
+│   └── admin/
+│       ├── login/page.tsx        # Вход: POST /api/admin/login → JWT в localStorage
+│       └── (dashboard)/          # AdminGate проверяет токен через GET /api/admin/me
+│           ├── page.tsx          #   Обзор: счётчики, последняя заявка
+│           ├── products/         #   Список / создание / редактирование / удаление
+│           └── leads/            #   Заявки: таблица + удаление
 ├── components/
 │   ├── site/                     # Navbar, Footer, LeadForm, ProductCard, FadeIn
-│   └── admin/                    # AdminNav, LoginForm, ProductForm, кнопки удаления
-├── lib/                          # zod-схемы, типы DTO, SWR-фетчер, данные сайта
-└── server/                       # ← БЭКЕНД-СЛОЙ (Node.js)
-    ├── db/schema.ts              #   таблицы products, leads (Drizzle)
-    ├── db/index.ts               #   клиент БД + демо-режим без DATABASE_URL
-    ├── queries.ts                #   каталог, заявки, CRUD товаров
-    ├── actions.ts                #   Server Action публичной формы
-    ├── admin-actions.ts          #   Server Actions админки (login, CRUD) — с проверкой сессии
-    ├── auth.ts                   #   сессия админа: HMAC-cookie, логин/пароль из env
-    └── demo-store.ts             #   in-memory стор для режима без БД
-drizzle/                          # SQL-миграции (применяются на Railway автоматически)
-scripts/seed.ts                   # первичное наполнение БД
-railway.json                      # конфиг деплоя: build/start/pre-deploy/healthcheck
+│   └── admin/                    # AdminGate, AdminNav, LoginForm, ProductForm, клиенты страниц
+└── lib/
+    ├── api.ts                    # ЕДИНЫЙ клиент бэкенда: публичные эндпоинты + /api/admin/* (Bearer)
+    ├── fetcher.ts                # API_BASE из NEXT_PUBLIC_API_URL + SWR-фетчер
+    ├── types.ts                  # Типы DTO (контракт с бэкендом)
+    ├── validation.ts             # zod-схемы форм, контакты-заглушки
+    └── site-data.ts              # Контент страниц (преимущества и т.д.)
 ```
+
+## Где ходят запросы к бэкенду
+
+| Что | Код | Запрос |
+|---|---|---|
+| Каталог «Продукция» | `src/app/products/products-client.tsx` | SWR → `GET /api/products` |
+| Карточка товара | `src/app/products/[slug]/page.tsx` | SSR-фетч → `GET /api/products/:slug` (+ каталог для «похожих») |
+| Форма заявки (все страницы) | `src/lib/api.ts → postLead()` | `POST /api/leads?source=...` |
+| Вход в админку | `src/components/admin/login-form.tsx` | `POST /api/admin/login` |
+| Проверка сессии | `src/components/admin/admin-gate.tsx` | `GET /api/admin/me` |
+| Список/CRUD товаров | `overview-client`, `products-admin-client`, `product-edit-client`, `product-form` | `GET/POST/PUT/DELETE /api/admin/products` |
+| Заявки в админке | `leads-client.tsx`, `delete-buttons.tsx` | `GET /api/admin/leads`, `DELETE /api/admin/leads/:id` |
+
+После правок товаров в админке клиент сбрасывает кэш SWR (`mutate`), поэтому
+изменения видны и в админке, и в публичном каталоге без перезапуска.
 
 ## Админка
 
 Адрес: **`/admin`** (ссылка «Вход для сотрудников» — в подвале сайта).
 
-- Логин/пароль задаются переменными окружения `ADMIN_USERNAME` / `ADMIN_PASSWORD`
-  (по умолчанию `admin` / `admin123` — обязательно смените на Railway).
-- Сессия — подписанная HMAC cookie (секрет в `ADMIN_SESSION_SECRET`), живёт 7 дней.
-- Без БД (демо-режим) админка полностью интерактивна, но изменения хранятся
-  в памяти процесса и сбрасываются при перезапуске. С PostgreSQL — всё
-  сохраняется в БД.
+- Логин/пароль задаются **на бэкенде** переменными `ADMIN_USERNAME` /
+  `ADMIN_PASSWORD`; `POST /api/admin/login` возвращает JWT (живёт 8 часов).
+- Токен хранится в `localStorage` и отправляется заголовком
+  `Authorization: Bearer ...`. Просрочка (401) → админка отправляет на логин.
+- Без БД (демо-режим бэкенда) списки отдаются демонстрационными, а запись
+  (создание/правка/удаление) отвечает 503 — это нормально: подключите
+  `DATABASE_URL`, и всё заработает.
 
 Возможности:
 
 - **Обзор**: количество товаров и заявок, последняя заявка;
 - **Товары**: таблица всех позиций, создание, редактирование, скрытие
-  (`isActive`), удаление. У товара есть поле «Фото» (`/images/...` из `/public`
-  или внешний URL) с предпросмотром прямо в форме. Правки сразу видны на сайте;
+  (`isActive`), удаление. Поле «Фото» (`/images/...` или внешний URL)
+  с предпросмотром прямо в форме. Правки сразу видны на сайте;
 - **Заявки**: все обращения с датой, телефоном, источником (страница/товар);
-  удаление. У каждой карточки товара свой источник вида `product:<slug>`.
+  удаление (`DELETE /api/admin/leads/:id`).
 
-## Демо-режим (важно)
+## Демо-режим (свойство бэкенда)
 
-Если переменная `DATABASE_URL` не задана или недоступна — сайт не падает:
-каталог отдаёт заглушки с плашкой «Демо-режим», форма пишет заявку в лог
-сервера. На Railway с подключённым PostgreSQL данные идут из реальной БД.
-
----
+Если на бэкенде переменная `DATABASE_URL` не задана или недоступна — он не
+падает: каталог отдаёт демо-позиции с флагом `demo: true` (фронт показывает
+золотую плашку), форма пишет заявку в лог сервера. Фронт при этом работает
+как обычно — источник данных всегда один: бэкенд.
 
 ## Локальный запуск
 
-```bash
-npm install                 # или bun install
-cp .env.example .env        # укажите локальный/облачный Postgres
-npm run db:push             # создать таблицы (для быстрой разработки)
-npm run db:seed             # наполнить каталог демо-товарами
-npm run dev                 # http://localhost:3000
-```
-
-Команды Drizzle:
+Нужны два терминала: бэкенд и фронтенд.
 
 ```bash
-npm run db:generate         # сгенерировать SQL-миграцию из schema.ts
-npm run db:migrate          # применить миграции (используется на Railway)
-npm run db:studio           # визуальный редактор данных
+# Терминал 1 — бэкенд (отдельное репо china-cars-backend)
+cd china-cars-backend
+cp .env.example .env            # вписать DATABASE_URL (Neon), ADMIN_*, CORS_ORIGIN
+npm install
+npm run db:migrate              # создать таблицы products/leads в Neon
+npm run db:seed                 # наполнить каталог демо-товарами
+npm run dev                     # http://localhost:3001
+
+# Терминал 2 — фронтенд (это репо)
+npm install
+cp .env.example .env.local      # NEXT_PUBLIC_API_URL=http://localhost:3001
+npm run dev                     # http://localhost:3000
 ```
 
----
+В `CORS_ORIGIN` бэкенда добавьте `http://localhost:3000`, иначе браузер
+заблокирует запросы. Напоминание: после изменения `NEXT_PUBLIC_API_URL`
+dev-сервер фронта нужно перезапускать — переменная вшивается при сборке.
 
-## Шаг 1. Залить на GitHub
+## Деплой на Vercel (два проекта)
 
-```bash
-cd <папка проекта>
-git init
-git add .
-git commit -m "feat: стартовый сайт-визитка (Next.js + Drizzle + Railway)"
-git branch -M main
-git remote add origin https://github.com/<ваш-логин>/<имя-репозитория>.git
-git push -u origin main
-```
+| Проект | Переменная | Значение |
+|---|---|---|
+| Фронтенд (это репо) | `NEXT_PUBLIC_API_URL` | `https://ваш-бэк.vercel.app` |
+| Бэкенд (china-cars-backend) | `DATABASE_URL` | pooled-строка Neon (`...-pooler...neon.tech/...?sslmode=require`) |
+| Бэкенд | `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `ADMIN_JWT_SECRET` | логин/пароль админки |
+| Бэкенд | `CORS_ORIGIN` | `https://ваш-фронт.vercel.app` |
 
-`.env` в репозиторий не попадёт (уже в `.gitignore`) — секреты только в переменных Railway.
-
-## Шаг 2. Развернуть на Railway
-
-1. Зайдите на [railway.com](https://railway.com) → **New Project → Deploy from GitHub repo** → выберите репозиторий. Railway сам определит Next.js (`npm run build` из `railway.json`).
-2. Добавьте БД: в том же проекте **+ New → Database → PostgreSQL**.
-3. Свяжите приложение с БД: сервис приложения → **Variables → Add Reference Variable → `DATABASE_URL`** (из сервиса Postgres). Проект перезапустится сам.
-4. Публичный домен: сервис приложения → **Settings → Networking → Generate Domain** → получите `...up.railway.app`.
-5. Дождитесь деплоя. Railway перед каждым запуском выполнит `npm run db:migrate`
-   (pre-deploy command из `railway.json`) — таблицы создадутся автоматически.
-6. Наполните каталог: скопируйте публичную строку подключения Postgres
-   (сервис Postgres → Variables → `DATABASE_URL`) и выполните локально:
-   ```bash
-   DATABASE_URL="postgresql://..." npm run db:seed
-   ```
-
-Проверка: откройте `https://<домен>/api/health` → `{"ok":true,"db":"configured"}`,
-а на `/products` пропадёт плашка «Демо-режим».
-
-Полезно: вкладка **Deployments / Logs** — логи приложения; **Metrics** — расход ресурсов.
-
-## Шаг 3. Обновления
-
-Любой `git push` в `main` автоматически перезапускает деплой:
-изменили код → push → Railway пересобрал → миграции применились → сайт обновился.
-
----
-
-## Как фронтенд общается с бэкендом
-
-Бэкенд и фронтенд живут **в одном процессе** — это обычное приложение Next.js:
-
-1. **REST + SWR (каталог).** Клиентский компонент `useSWR("/api/products", fetcher)`
-   делает обычный `fetch` на тот же домен → Next.js выполняет серверный роут
-   `app/api/products/route.ts` (это Node.js) → тот через Drizzle читает Postgres
-   → возвращает JSON. Фронт рисует карточки. Плюсы: кэширование SWR, загрузка,
-   ошибки и повторные запросы — из коробки.
-2. **Server Action (форма заявки).** `LeadForm` вызывает функцию
-   `submitLeadAction()` напрямую — это «прокол» клиент-сервер границы без ручного
-   fetch и REST-эндпоинта. Функция валидирует данные zod-схемой (та же, что на
-   клиенте) и пишет заявку в БД. Плюсы: минимум кода, типобезопасность, никаких
-   CORS. Дополнительно есть дублирующий REST `POST /api/leads` — на будущее
-   (мобильное приложение, ВК-мини-апп).
-
-Это **хорошо** для такого проекта: один домен (нет CORS и проблем с cookie),
-один деплой, SSR для SEO. Отдельный бэкенд (NestJS/Fastify на другом сервисе
-Railway) имеет смысл позже — при интеграциях (1С, маркетплейсы), фоновых задачах
-или когда API нужен нескольким клиентам.
+Порядок: залить бэкенд → залить фронтенд → добавить переменные →
+**Redeploy обоих** (NEXT_PUBLIC_* и CORS_ORIGIN применяются пересборкой).
+Проверка: `https://ваш-бэк.vercel.app/api/health` → `"db":"configured"`;
+на сайте каталог открывается без плашки «Демо-режим».
 
 ## Что заменить перед запуском в прод
 
 - [ ] Название бренда «TUNING/304» → финальное (согласуется по ТЗ);
 - [ ] телефон `+7 (900) 123-45-67`, почта, мессенджеры и адрес производства — в `src/lib/validation.ts` и `src/app/contacts/page.tsx`;
-- [ ] **пароль админки**: `ADMIN_PASSWORD` и `ADMIN_SESSION_SECRET` в переменных Railway;
-- [ ] цены и описания товаров — заглушки (правьте прямо в админке или пересеять seed);
+- [ ] **пароль админки**: `ADMIN_PASSWORD` и `ADMIN_JWT_SECRET` в Variables бэкенд-проекта Vercel;
+- [ ] цены и описания товаров — заглушки (правьте прямо в админке);
 - [ ] заменить стоковые фото на реальные снимки продукции: файлы в
   `public/images/` (hero.jpg, philosophy.jpg, jac-t9.jpg, haval-h3.jpg,
   custom.jpg) + поле «Фото» у каждого товара в админке;
-- [ ] подключить свой домен в Railway (Settings → Networking → Custom Domain);
-- [ ] настроить уведомления о заявках (Telegram-бот или Resend) — в `src/server/queries.ts → createLead()`.
+- [ ] подключить свой домен в Vercel (Settings → Domains);
+- [ ] настроить уведомления о заявках (Telegram-бот или Resend) — на бэкенде,
+  в роуте `POST /api/leads`.

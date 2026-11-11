@@ -1,16 +1,52 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSWRConfig } from "swr";
 import { Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { deleteLeadAction, deleteProductAction } from "@/server/admin-actions";
+import {
+  AuthError,
+  deleteAdminLead,
+  deleteAdminProduct,
+} from "@/lib/api";
+
+/**
+ * Кнопки удаления в админке. Данные теперь приходят с бэкенда,
+ * поэтому после удаления перезапрашиваем кэш SWR:
+ *  - /api/admin/products — таблица в админке;
+ *  - /api/products       — публичный каталог.
+ */
+function useDelete() {
+  const router = useRouter();
+  const { mutate } = useSWRConfig();
+  const [pending, setPending] = useState(false);
+
+  async function run(action: () => Promise<void>, okText: string, keys: string[]) {
+    setPending(true);
+    try {
+      await action();
+      toast.success(okText);
+      for (const key of keys) void mutate(key);
+    } catch (err) {
+      if (err instanceof AuthError) {
+        toast.error(err.message);
+        router.replace("/admin/login");
+      } else {
+        toast.error(err instanceof Error ? err.message : "Ошибка удаления");
+      }
+    } finally {
+      setPending(false);
+    }
+  }
+
+  return { pending, run };
+}
 
 export function DeleteProductButton({ id, title }: { id: number; title: string }) {
-  const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const { pending, run } = useDelete();
 
   return (
     <Button
@@ -20,15 +56,10 @@ export function DeleteProductButton({ id, title }: { id: number; title: string }
       disabled={pending}
       onClick={() => {
         if (!window.confirm(`Удалить товар «${title}»? Действие необратимо.`)) return;
-        startTransition(async () => {
-          const res = await deleteProductAction(id);
-          if (res.ok) {
-            toast.success("Товар удалён");
-            router.refresh();
-          } else {
-            toast.error(res.error ?? "Ошибка удаления");
-          }
-        });
+        void run(() => deleteAdminProduct(id), "Товар удалён", [
+          "/api/admin/products",
+          "/api/products",
+        ]);
       }}
       aria-label={`Удалить товар ${title}`}
     >
@@ -42,8 +73,7 @@ export function DeleteProductButton({ id, title }: { id: number; title: string }
 }
 
 export function DeleteLeadButton({ id }: { id: number }) {
-  const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const { pending, run } = useDelete();
 
   return (
     <Button
@@ -53,15 +83,9 @@ export function DeleteLeadButton({ id }: { id: number }) {
       disabled={pending}
       onClick={() => {
         if (!window.confirm("Удалить заявку? Действие необратимо.")) return;
-        startTransition(async () => {
-          const res = await deleteLeadAction(id);
-          if (res.ok) {
-            toast.success("Заявка удалена");
-            router.refresh();
-          } else {
-            toast.error(res.error ?? "Ошибка удаления");
-          }
-        });
+        void run(() => deleteAdminLead(id), "Заявка удалена", [
+          "/api/admin/leads",
+        ]);
       }}
       aria-label="Удалить заявку"
     >

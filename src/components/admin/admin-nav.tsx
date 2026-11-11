@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { ExternalLink, LayoutDashboard, LogOut, Mail, Package } from "lucide-react";
 import { toast } from "sonner";
 
-import { logoutAction } from "@/server/admin-actions";
+import { clearStoredToken } from "@/lib/api";
 
 const TABS = [
   { href: "/admin", label: "Обзор", icon: LayoutDashboard },
@@ -17,11 +17,10 @@ export function AdminNav({ username }: { username: string }) {
   const pathname = usePathname();
   const router = useRouter();
 
-  async function onLogout() {
-    await logoutAction();
+  function onLogout() {
+    clearStoredToken();
     toast.success("Вы вышли из админки");
     router.replace("/admin/login");
-    router.refresh();
   }
 
   return (

@@ -6,11 +6,11 @@ import { z } from "zod";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
+import { postLead } from "@/lib/api";
 import {
   leadSchema,
   type LeadInput,
 } from "@/lib/validation";
-import { submitLeadAction } from "@/server/actions";
 
 /**
  * Клиентская схема = серверная leadSchema + обязательное согласие
@@ -38,9 +38,9 @@ type LeadFormValues = LeadInput & { consent: boolean };
  *
  * Как работает отправка:
  * 1. react-hook-form + zod валидируют поля на клиенте.
- * 2. Сабмит вызывает Server Action submitLeadAction — прямая функция
- *    на сервере, без fetch и CORS.
- * 3. Сервер повторно валидирует данные той же zod-схемой и пишет заявку в БД.
+ * 2. Сабмит через postLead() шлёт POST /api/leads на отдельный Node.js-бэкенд
+ *    (адрес — NEXT_PUBLIC_API_URL, CORS настроен на бэкенде).
+ * 3. Бэкенд повторно валидирует данные той же zod-схемой и пишет заявку в БД.
  */
 export function LeadForm({
   source = "website",
@@ -83,17 +83,20 @@ export function LeadForm({
   const errorCls = "mt-1.5 text-xs text-red-600";
 
   async function onSubmit({ consent: _consent, ...values }: LeadFormValues) {
-    const result = await submitLeadAction(values, source);
-
-    if (result.ok) {
+    try {
+      const result = await postLead(values, source);
       toast.success("Заявка отправлена!", {
         description: result.demo
-          ? "Демо-режим: БД не подключена, заявка сохранена только в консоли сервера."
+          ? "Демо-режим бэкенда: БД не подключена, заявка сохранена только в логе сервера."
           : "Мы свяжемся с вами в ближайшее время.",
       });
       reset({ name: "", phone: "", carModel: "", message: "", consent: false });
-    } else {
-      toast.error(result.error ?? "Что-то пошло не так. Попробуйте ещё раз.");
+    } catch (err) {
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "Что-то пошло не так. Попробуйте ещё раз.",
+      );
     }
   }
 

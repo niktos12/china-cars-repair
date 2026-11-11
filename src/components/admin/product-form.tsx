@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
+import { useSWRConfig } from "swr";
 import { ImagePlus, Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 
@@ -13,14 +14,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  AuthError,
+  createAdminProduct,
+  updateAdminProduct,
+} from "@/lib/api";
+import type { ProductSavePayload } from "@/lib/types";
+import {
   productFormSchema,
   type ProductFormInput,
 } from "@/lib/validation";
-import { saveProductAction } from "@/server/admin-actions";
 
 /**
  * Форма создания/редактирования товара.
- * Валидация на клиенте (zod) + повторная на сервере (saveProductAction).
+ * Валидация на клиенте (zod), затем POST/PUT /api/admin/products на бэкенд
+ * с Bearer-токеном (повторная валидация там же, в productPayloadSchema).
  */
 export function ProductForm({
   productId,
@@ -31,6 +38,7 @@ export function ProductForm({
   defaultValues: ProductFormInput;
 }) {
   const router = useRouter();
+  const { mutate } = useSWRConfig();
   const [imageUrl, setImageUrl] = useState(defaultValues.imageUrl ?? "");
   const {
     register,
@@ -43,20 +51,41 @@ export function ProductForm({
   });
 
   async function onSubmit(values: ProductFormInput) {
-    const result = await saveProductAction(values, productId);
-    if (result.ok) {
-      toast.success(
-        productId ? "Товар сохранён" : "Товар создан",
-        {
-          description: result.demo
-            ? "Демо-режим: изменения в памяти процесса, на проде сохранятся в Postgres."
-            : "Изменения уже на сайте.",
-        },
-      );
+    /* Форма хранит цену строкой — приводим к формату API (number | null) */
+    const payload: ProductSavePayload = {
+      slug: values.slug,
+      title: values.title,
+      carModel: values.carModel,
+      position: values.position,
+      material: values.material,
+      description: values.description,
+      priceFrom: values.priceFrom === "" ? null : Number(values.priceFrom),
+      imageUrl: values.imageUrl ? values.imageUrl : null,
+      isActive: values.isActive,
+    };
+
+    try {
+      if (productId) {
+        await updateAdminProduct(productId, payload);
+      } else {
+        await createAdminProduct(payload);
+      }
+      toast.success(productId ? "Товар сохранён" : "Товар создан", {
+        description: "Изменения уже на сайте.",
+      });
+      /* Обновляем кэш админки и публичного каталога */
+      void mutate("/api/admin/products");
+      void mutate("/api/products");
       router.push("/admin/products");
-      router.refresh();
-    } else {
-      toast.error(result.error ?? "Не удалось сохранить товар");
+    } catch (err) {
+      if (err instanceof AuthError) {
+        toast.error(err.message);
+        router.replace("/admin/login");
+      } else {
+        toast.error(
+          err instanceof Error ? err.message : "Не удалось сохранить товар",
+        );
+      }
     }
   }
 

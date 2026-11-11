@@ -18,9 +18,9 @@ const FILTERS: { value: Filter; label: string }[] = [
 ];
 
 /**
- * Каталог = наглядный пример связи фронтенда с бэкендом через REST:
- * SWR запрашивает GET /api/products, бэкенд достаёт данные из Postgres
- * (или отдаёт демо-набор, если БД не подключена).
+ * Каталог: SWR запрашивает GET /api/products у отдельного бэкенда
+ * (адрес — NEXT_PUBLIC_API_URL), бэкенд достаёт данные из Postgres
+ * или отдаёт демо-набор, если запущен без БД.
  *
  * initialModel приходит из ?model=... (карточки моделей на главной).
  */
@@ -82,9 +82,9 @@ export function ProductsClient({ initialModel = "all" }: { initialModel?: string
         <div className="mt-8 flex items-start gap-3 border border-gold/40 bg-gold/10 p-4 text-sm text-gold">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
           <p>
-            <span className="font-semibold">Демо-режим.</span> База данных не
-            подключена, показаны заглушки. На Railway после привязки PostgreSQL
-            каталог будет загружаться из БД.
+            <span className="font-semibold">Демо-режим бэкенда.</span> База
+            данных не подключена, показаны демо-позиции. После подключения
+            PostgreSQL (DATABASE_URL) каталог будет загружаться из БД.
           </p>
         </div>
       )}

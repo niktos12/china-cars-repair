@@ -1,16 +1,17 @@
 "use client";
 
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, LogIn, Shield } from "lucide-react";
 import { toast } from "sonner";
 
+import { adminLogin, adminMe, getStoredToken, storeToken } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { adminLoginSchema, type AdminLoginInput } from "@/lib/validation";
-import { loginAction } from "@/server/admin-actions";
 
 export function LoginForm() {
   const router = useRouter();
@@ -23,14 +24,24 @@ export function LoginForm() {
     defaultValues: { username: "", password: "" },
   });
 
+  /* Уже вошли (токен жив) — сразу на дашборд, без повторного логина */
+  useEffect(() => {
+    if (!getStoredToken()) return;
+    adminMe()
+      .then(() => router.replace("/admin"))
+      .catch(() => {
+        /* токен мёртв — останемся на форме, adminFetch уже снял его */
+      });
+  }, [router]);
+
   async function onSubmit(values: AdminLoginInput) {
-    const result = await loginAction(values);
-    if (result.ok) {
+    try {
+      const token = await adminLogin(values.username, values.password);
+      storeToken(token);
       toast.success("Вход выполнен");
       router.replace("/admin");
-      router.refresh();
-    } else {
-      toast.error(result.error ?? "Ошибка входа");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Ошибка входа");
     }
   }
 
@@ -72,8 +83,8 @@ export function LoginForm() {
 
       <p className="flex items-start gap-2 bg-white/5 p-3 text-xs text-zinc-400">
         <Shield className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold" aria-hidden="true" />
-        Логин и пароль задаются переменными окружения ADMIN_USERNAME и
-        ADMIN_PASSWORD. По умолчанию: admin / admin123.
+        Логин и пароль задаются на бэкенде переменными окружения
+        ADMIN_USERNAME и ADMIN_PASSWORD (см. .env бэкенд-репозитория).
       </p>
     </form>
   );
