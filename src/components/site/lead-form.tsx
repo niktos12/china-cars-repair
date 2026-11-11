@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-
+import { formatRuPhone } from "@/lib/phone";
 import { postLead } from "@/lib/api";
 import {
   leadSchema,
@@ -76,7 +76,7 @@ export function LeadForm({
       consent: false,
     },
   });
-
+  const phoneRegister = register("phone");
   const isLight = variant === "light";
   const labelCls = `mb-1 block text-xs ${isLight ? "text-zinc-600" : "text-zinc-400"}`;
   const inputCls = isLight ? "input-underline-light" : "input-underline-dark";
@@ -148,7 +148,11 @@ export function LeadForm({
             className={inputCls}
             autoComplete="tel"
             aria-invalid={!!errors.phone}
-            {...register("phone")}
+            {...phoneRegister}
+            onChange={(e) => {
+              e.target.value = formatRuPhone(e.target.value);
+              phoneRegister.onChange(e);
+            }}
           />
           {errors.phone && (
             <p className={errorCls} role="alert">
