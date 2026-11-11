@@ -1,0 +1,142 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-comfortaa), var(--font-inter), ui-sans-serif, system-ui,
+    sans-serif;
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* ===== Брендовые цвета TUNING/304 (сняты с референса) ===== */
+  --color-gold: #d4af37;
+  --color-gold-light: #e6c65c;
+  --color-coal: #1a1a1a;
+  --color-coal-light: #212121;
+  --color-panel: #202020;
+  --color-paper: #f5f5f5;
+}
+
+/*
+  Сайт выполнен в постоянной тёмной теме (фон #1a1a1a, золото #d4af37).
+  Светлые секции задаются классом bg-paper.
+*/
+:root {
+  --radius: 0.375rem;
+  --background: #1a1a1a;
+  --foreground: #f5f5f5;
+  --card: #202020;
+  --card-foreground: #f5f5f5;
+  --popover: #202020;
+  --popover-foreground: #f5f5f5;
+  --primary: #d4af37;
+  --primary-foreground: #1a1a1a;
+  --secondary: #262626;
+  --secondary-foreground: #f5f5f5;
+  --muted: #262626;
+  --muted-foreground: #a1a1a1;
+  --accent: #262626;
+  --accent-foreground: #f5f5f5;
+  --destructive: #ef4444;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.16);
+  --ring: #d4af37;
+  --chart-1: #d4af37;
+  --chart-2: #878787;
+  --chart-3: #62656e;
+  --chart-4: #f5f5f5;
+  --chart-5: #505050;
+  --sidebar: #202020;
+  --sidebar-foreground: #f5f5f5;
+  --sidebar-primary: #d4af37;
+  --sidebar-primary-foreground: #1a1a1a;
+  --sidebar-accent: #262626;
+  --sidebar-accent-foreground: #f5f5f5;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-ring: #d4af37;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-coal text-foreground;
+  }
+  ::selection {
+    background: #d4af37;
+    color: #1a1a1a;
+  }
+}
+
+@layer components {
+  /* ---- Контейнер сайта ---- */
+  .container-site {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6;
+  }
+
+  /* ---- Кнопки в стиле референса ---- */
+  .btn-outline-gold {
+    @apply inline-flex items-center justify-center gap-2 border border-gold/80 px-6 py-3 text-sm font-medium text-gold transition-colors duration-200 hover:bg-gold hover:text-coal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-solid-gold {
+    @apply inline-flex items-center justify-center gap-2 bg-gold px-6 py-3 text-sm font-semibold text-coal transition-colors duration-200 hover:bg-gold-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-solid-dark {
+    @apply inline-flex items-center justify-center gap-2 bg-coal px-7 py-3.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-coal disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-ghost-gold {
+    @apply inline-flex items-center justify-center gap-1.5 px-2 py-1 text-sm font-medium text-gold transition-colors hover:text-gold-light;
+  }
+
+  /* ---- Поля ввода с подчёркиванием (как в референсе) ---- */
+  .input-underline-light {
+    @apply w-full rounded-none border-0 border-b border-zinc-400 bg-transparent py-2.5 text-sm text-zinc-900 outline-none transition-colors placeholder:text-zinc-500 focus:border-b-2 focus:border-gold;
+  }
+  .input-underline-dark {
+    @apply w-full rounded-none border-0 border-b border-zinc-600 bg-transparent py-2.5 text-sm text-zinc-50 outline-none transition-colors placeholder:text-zinc-500 focus:border-b-2 focus:border-gold;
+  }
+
+  /* ---- Панель светлой секции ---- */
+  .panel-paper {
+    @apply bg-paper text-coal;
+  }
+}

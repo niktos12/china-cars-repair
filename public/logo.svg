@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <rect width="48" height="48" rx="8" fill="#1a1a1a"/>
+  <circle cx="24" cy="24" r="19" fill="none" stroke="#d4af37" stroke-width="3.2"/>
+  <circle cx="24" cy="24" r="5.6" fill="#d4af37"/>
+  <g stroke="#d4af37" stroke-width="3" stroke-linecap="round">
+    <line x1="24" y1="13.5" x2="24" y2="19.5" transform="rotate(0 24 24)"/>
+    <line x1="24" y1="13.5" x2="24" y2="19.5" transform="rotate(30 24 24)"/>
+    <line x1="24" y1="13.5" x2="24" y2="19.5" transform="rotate(60 24 24)"/>
+    <line x1="24" y1="13.5" x2="24" y2="19.5" transform="rotate(90 24 24)"/>
+    <line x1="24" y1="13.5" x2="24" y2="19.5" transform="rotate(120 24 24)"/>
+    <line x1="24" y1="13.5" x2="24" y2="19.5" transform="rotate(150 24 24)"/>
+    <line x1="24" y1="13.5" x2="24" y2="19.5" transform="rotate(180 24 24)"/>
+    <line x1="24" y1="13.5" x2="24" y2="19.5" transform="rotate(210 24 24)"/>
+    <line x1="24" y1="13.5" x2="24" y2="19.5" transform="rotate(240 24 24)"/>
+    <line x1="24" y1="13.5" x2="24" y2="19.5" transform="rotate(270 24 24)"/>
+    <line x1="24" y1="13.5" x2="24" y2="19.5" transform="rotate(300 24 24)"/>
+    <line x1="24" y1="13.5" x2="24" y2="19.5" transform="rotate(330 24 24)"/>
+  </g>
+</svg>
