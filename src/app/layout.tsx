@@ -4,6 +4,7 @@ import "./globals.css";
 
 import { Footer } from "@/components/site/footer";
 import { Navbar } from "@/components/site/navbar";
+import { SmoothScroll } from "@/components/site/smooth-scroll";
 import { Toaster } from "@/components/ui/sonner";
 
 /*
@@ -24,15 +25,15 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: {
     default:
-      "TUNING/304 — защита бамперов из нержавеющей стали для JAC T9 и Haval H3",
-    template: "%s — TUNING/304",
+      "Гранфорт — защита бамперов из нержавеющей стали для JAC T9 и Haval H3",
+    template: "%s — Гранфорт",
   },
   description:
     "Защита, которая держит форму. Производство защиты передних и задних бамперов из нержавеющей стали AISI 304 и чёрного металла с порошковым покрытием для китайских внедорожников и пикапов. Готовые комплекты для JAC T9 и Haval H3, индивидуальное изготовление, установка без сверления кузова, доставка по всей России.",
   keywords: [
     "защита бампера",
     "тюнинг китайских автомобилей",
-    "TUNING 304",
+    "Гранфорт",
     "JAC T9",
     "Haval H3",
     "нержавеющая сталь AISI 304",
@@ -44,10 +45,10 @@ export const metadata: Metadata = {
   ],
   icons: { icon: "/logo.svg" },
   openGraph: {
-    title: "TUNING/304 — защита, которая держит форму",
+    title: "Гранфорт — защита, которая держит форму",
     description:
       "Силовые элементы для китайских внедорожников и пикапов из нержавеющей стали AISI 304. Готовые комплекты для JAC T9 и Haval H3, индивидуальное изготовление под другие модели.",
-    siteName: "TUNING/304",
+    siteName: "Гранфорт",
     type: "website",
     locale: "ru_RU",
   },
@@ -63,6 +64,7 @@ export default function RootLayout({
       <body
         className={`${comfortaa.variable} ${inter.variable} flex min-h-screen flex-col bg-coal font-sans text-foreground antialiased`}
       >
+        <SmoothScroll />
         <Navbar />
         <main className="flex-1">{children}</main>
         <Footer />

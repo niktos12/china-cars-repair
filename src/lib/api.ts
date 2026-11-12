@@ -1,13 +1,8 @@
 /**
- * Единый клиент API бэкенда.
- *
- * Фронтенд НЕ хранит данные локально и не ходит в БД: все запросы
- * уходят на Express-бэкенд (NEXT_PUBLIC_API_URL).
- *
- *  - Публичные запросы (каталог, страница товара, заявка) — без авторизации.
- *  - Админ-API — с JWT: POST /api/admin/login возвращает токен, он хранится
- *    в localStorage и отправляется заголовком Authorization: Bearer <token>.
- *    Ответ 401 выбрасывает AuthError — вызывающий код отправляет на /admin/login.
+ * Клиент API бэкенда (адрес — NEXT_PUBLIC_API_URL).
+ * Публичные запросы — без авторизации; админ-API — с JWT: POST /api/admin/login
+ * возвращает токен, он хранится в localStorage и идёт заголовком
+ * Authorization: Bearer. 401 выбрасывает AuthError — код отправляет на /admin/login.
  */
 import { requireApiBase } from "./fetcher";
 import type {
@@ -23,7 +18,14 @@ import type {
   ProductsResponse,
 } from "./types";
 
-/** Читает текст ошибки из JSON-ответа бэкенда ({ error: "..." }) */
+const STATUS_TEXT: Record<number, string> = {
+  400: "Проверьте правильность заполненных данных",
+  404: "Данные не найдены",
+  500: "Ошибка сервера, попробуйте позже",
+  503: "Сервис временно недоступен",
+};
+
+/** Текст ошибки из JSON-ответа бэкенда ({ error: "..." }) или общий текст по статусу */
 async function errorMessage(res: Response): Promise<string> {
   try {
     const data = (await res.json()) as { error?: string };
@@ -31,7 +33,9 @@ async function errorMessage(res: Response): Promise<string> {
   } catch {
     /* тело не JSON */
   }
-  return `Бэкенд ответил ошибкой ${res.status}`;
+  return (
+    STATUS_TEXT[res.status] ?? `Сервис временно недоступен (ошибка ${res.status})`
+  );
 }
 
 /* ==================================================================== */
@@ -45,10 +49,8 @@ export async function fetchProducts(): Promise<ProductsResponse> {
   return (await res.json()) as ProductsResponse;
 }
 
-/**
- * GET /api/products/:slug — товар для серверного рендера страницы.
- * 404 или недоступный бэкенд = null (страница покажет «не найдено»).
- */
+/** GET /api/products/:slug — товар для серверного рендера страницы.
+ *  404 или недоступный бэкенд = null (страница покажет «не найдено»). */
 export async function fetchProductBySlug(
   slug: string,
 ): Promise<ProductPageResponse | null> {
@@ -77,10 +79,8 @@ export async function fetchRelatedProducts(
     .slice(0, 3);
 }
 
-/**
- * POST /api/leads?source=... — заявка с формы.
- * Бросает Error с текстом от бэкенда (zod-валидация, недоступность и т.п.).
- */
+/** POST /api/leads?source=... — заявка с формы.
+ *  Бросает Error с текстом от бэкенда (валидация, недоступность). */
 export async function postLead(
   values: LeadInput,
   source: string,
@@ -106,7 +106,7 @@ export async function postLead(
 /* Админ-API: JWT в localStorage, Bearer-заголовок                       */
 /* ==================================================================== */
 
-const TOKEN_KEY = "tuning304.admin.jwt";
+const TOKEN_KEY = "granfort.admin.jwt";
 
 /** 401 от бэкенда: токена нет/просрочен — нужно разлогинить */
 export class AuthError extends Error {
@@ -132,9 +132,8 @@ export function clearStoredToken(): void {
 }
 
 /**
- * Запрос к /api/admin/* с Bearer-токеном.
- * 401 → сбрасываем токен и бросаем AuthError.
- * Остальные ошибки → Error с текстом от бэкенда.
+ * Запрос к /api/admin/* с Bearer-токеном. 401 → AuthError,
+ * остальные ошибки → Error с текстом от бэкенда.
  */
 export async function adminFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers);

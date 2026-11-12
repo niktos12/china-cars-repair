@@ -28,7 +28,7 @@ export default function AdminLoginPage() {
           <div>
             <h1 className="text-lg font-bold">Админ-панель</h1>
             <p className="text-xs text-zinc-500">
-              Управление товарами и заявками TUNING/304
+              Управление товарами и заявками Гранфорт
             </p>
           </div>
         </div>

@@ -5,18 +5,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { formatRuPhone } from "@/lib/phone";
+
 import { postLead } from "@/lib/api";
+import { formatRuPhone } from "@/lib/phone";
 import {
   leadSchema,
   type LeadInput,
 } from "@/lib/validation";
 
-/**
- * Клиентская схема = серверная leadSchema + обязательное согласие
- * на обработку персональных данных (152-ФЗ). На сервер поле consent
- * не уходит — leadSchema его просто отбросит как неизвестный ключ.
- */
+/** Клиентская схема = серверная leadSchema + согласие (152-ФЗ) и
+ *  требование полного номера телефона. */
 const leadFormSchema = leadSchema.and(
   z.object({
     consent: z
@@ -24,23 +22,19 @@ const leadFormSchema = leadSchema.and(
       .refine((v) => v === true, {
         message: "Отметьте согласие на обработку персональных данных",
       }),
+    /** Маска не даёт ввести лишнее, но номер можно отправить недобранным —
+     * требуем все 11 цифр. */
+    phone: z.string().refine((v) => v.replace(/\D/g, "").length === 11, {
+      message: "Введите номер полностью — 11 цифр",
+    }),
   }),
 );
 
 type LeadFormValues = LeadInput & { consent: boolean };
 
 /**
- * Форма заявки в стиле референса: поля с подчёркиванием,
- * минималистичные подписи, чекбокс согласия.
- *
- * variant="light" — для светлых секций (главная, страница товара),
- * variant="dark"  — для тёмных страниц (контакты, индивидуальный заказ).
- *
- * Как работает отправка:
- * 1. react-hook-form + zod валидируют поля на клиенте.
- * 2. Сабмит через postLead() шлёт POST /api/leads на отдельный Node.js-бэкенд
- *    (адрес — NEXT_PUBLIC_API_URL, CORS настроен на бэкенде).
- * 3. Бэкенд повторно валидирует данные той же zod-схемой и пишет заявку в БД.
+ * Форма заявки. variant="light" — для светлых секций (главная, товар),
+ * variant="dark" — для тёмных (контакты, индивидуальный заказ).
  */
 export function LeadForm({
   source = "website",
@@ -76,7 +70,10 @@ export function LeadForm({
       consent: false,
     },
   });
+
+  /** Маска телефона: забираем onChange из register и подставляем формат. */
   const phoneRegister = register("phone");
+
   const isLight = variant === "light";
   const labelCls = `mb-1 block text-xs ${isLight ? "text-zinc-600" : "text-zinc-400"}`;
   const inputCls = isLight ? "input-underline-light" : "input-underline-dark";
@@ -84,11 +81,9 @@ export function LeadForm({
 
   async function onSubmit({ consent: _consent, ...values }: LeadFormValues) {
     try {
-      const result = await postLead(values, source);
+      await postLead(values, source);
       toast.success("Заявка отправлена!", {
-        description: result.demo
-          ? "Демо-режим бэкенда: БД не подключена, заявка сохранена только в логе сервера."
-          : "Мы свяжемся с вами в ближайшее время.",
+        description: "Мы свяжемся с вами в ближайшее время.",
       });
       reset({ name: "", phone: "", carModel: "", message: "", consent: false });
     } catch (err) {
@@ -161,7 +156,7 @@ export function LeadForm({
           )}
         </div>
 
-        <div className="sm:col-span-2">
+        <div>
           <label htmlFor="lead-car" className={labelCls}>
             Автомобиль
           </label>

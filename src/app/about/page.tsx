@@ -9,7 +9,7 @@ import { MATERIALS } from "@/lib/site-data";
 export const metadata: Metadata = {
   title: "О компании",
   description:
-    "TUNING/304 — производство защиты передних и задних бамперов для китайских внедорожников и пикапов. Нержавеющая сталь AISI 304 и чёрный металл с порошковым покрытием, установка без сверления, доставка по всей России.",
+    "Гранфорт — производство защиты передних и задних бамперов для китайских внедорожников и пикапов. Нержавеющая сталь AISI 304 и чёрный металл с порошковым покрытием, установка без сверления, доставка по всей России.",
 };
 
 const FACTS = [
@@ -27,7 +27,7 @@ export default function AboutPage() {
         <div className="container-site">
           <FadeIn>
             <p className="text-xs uppercase tracking-[0.3em] text-gold">
-              TUNING/304
+              Гранфорт
             </p>
             <h1 className="mt-4 max-w-3xl text-4xl font-bold uppercase leading-tight tracking-tight sm:text-5xl">
               Создано для тех, кто выбирает{" "}

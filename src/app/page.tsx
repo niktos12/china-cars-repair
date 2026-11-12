@@ -36,7 +36,7 @@ export default function HomePage() {
     <div className="flex flex-col">
       {/* ================= HERO ================= */}
       <section className="relative overflow-hidden bg-coal text-foreground">
-        {/* Фон: автомобиль в тёмной студии, как в референсе */}
+        {/* Фон: автомобиль в тёмной студии */}
         <div className="absolute inset-0" aria-hidden="true">
           <Image
             src="/images/hero.jpg"
@@ -46,18 +46,20 @@ export default function HomePage() {
             sizes="100vw"
             className="object-cover object-center opacity-80"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-coal via-coal/90 to-coal/20" />
+          <div className="absolute inset-0 bg-gradient-to-r from-coal via-coal/85 to-coal/10" />
           <div className="absolute inset-0 bg-gradient-to-t from-coal via-transparent to-coal/60" />
         </div>
 
-        <div className="container-site relative flex min-h-[86vh] flex-col justify-center py-24">
+        <div className="container-site relative flex min-h-[78vh] flex-col justify-center py-24 sm:min-h-[86vh]">
           <FadeIn>
             <h1 className="max-w-3xl text-5xl font-bold uppercase leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
               Защита
               <br />
               которая
               <br />
-              <span className="text-gold">держит</span> форму
+              <span className="text-gold">держит</span>
+              <br />
+              форму
             </h1>
           </FadeIn>
 
@@ -81,7 +83,7 @@ export default function HomePage() {
 
       {/* ================= ФИЛОСОФИЯ БРЕНДА ================= */}
       <section className="bg-coal py-20 md:py-28">
-        <div className="container-site grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+        <div className="container-site grid items-center gap-12 lg:grid-cols-[1.4fr_1fr] lg:gap-16">
           <div>
             <FadeIn>
               <h2 className="text-3xl font-bold uppercase leading-tight tracking-tight sm:text-4xl">
@@ -93,18 +95,19 @@ export default function HomePage() {
 
             <FadeIn delay={0.1}>
               <blockquote className="mt-8 border-l-2 border-gold pl-5 text-sm font-bold uppercase leading-relaxed text-zinc-100 sm:text-base">
-                Защита должна не только принимать удар, она должна точно
-                вставать, органично выглядеть и служить годами.
+                Защита должна не только принимать удар, она должна{" "}
+                <span className="text-gold">точно вставать</span>, органично
+                выглядеть и служить годами.
               </blockquote>
             </FadeIn>
 
             <FadeIn delay={0.2}>
               <p className="mt-6 max-w-xl text-sm leading-relaxed text-zinc-400">
-                Мы создаём стальные конструкции для китайских внедорожников и
-                пикапов, которые точно встают на своё место, усиливают
-                безопасность, выдерживают нагрузки и выглядят уместно. Каждая
-                защита проектируется под конкретную геометрию бампера,
-                монтажные точки и предполагаемые условия эксплуатации.
+                Мы развиваем специализированные решения для китайских
+                внедорожников и пикапов — автомобилей, которые всё чаще
+                выбирают для работы, путешествий и бездорожья. Каждый элемент —
+                это баланс инженерной точности, надёжного материала и
+                выразительного внешнего вида.
               </p>
             </FadeIn>
 
@@ -116,17 +119,13 @@ export default function HomePage() {
           </div>
 
           <FadeIn delay={0.15}>
-            <div className="relative aspect-[4/3] overflow-hidden border border-white/10">
+            <div className="relative aspect-[4/3] overflow-hidden lg:aspect-[4/5]">
               <Image
                 src="/images/philosophy.jpg"
                 alt="Пикап с силовым бампером из нержавеющей стали"
                 fill
-                sizes="(min-width: 1024px) 50vw, 100vw"
+                sizes="(min-width: 1024px) 40vw, 100vw"
                 className="object-cover"
-              />
-              <div
-                className="absolute inset-0 bg-gradient-to-t from-coal/40 to-transparent"
-                aria-hidden="true"
               />
             </div>
           </FadeIn>
@@ -146,45 +145,39 @@ export default function HomePage() {
             </FadeIn>
             <FadeIn delay={0.1}>
               <p className="max-w-md text-sm leading-relaxed text-zinc-600 lg:ml-auto">
-                Мы не универсальные решения, а инженерная конкретика под
-                конкретную модель и комплектацию. Каждая защита спроектирована
-                так, чтобы точно встать на место — без доработок и компромиссов.
+                Не универсальный аксессуар, а выверенная конструкция под
+                геометрию конкретной модели. Всё необходимое для установки уже
+                в комплекте.
               </p>
             </FadeIn>
           </div>
 
-          <div className="mt-12 grid gap-6 md:grid-cols-2">
+          <div className="mt-12 grid gap-6 md:grid-cols-[1.45fr_1fr]">
             {MODELS.map((m, i) => (
               <FadeIn key={m.name} delay={i * 0.12}>
                 <Link
                   href={m.href}
-                  className="group relative block aspect-[16/10] overflow-hidden bg-coal"
+                  className="group relative block min-h-[340px] overflow-hidden bg-coal sm:min-h-[440px] lg:min-h-[520px]"
                 >
                   <Image
                     src={m.image}
                     alt={`${m.name} — защита переднего и заднего бампера`}
                     fill
-                    sizes="(min-width: 768px) 50vw, 100vw"
+                    sizes="(min-width: 768px) 58vw, 100vw"
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   <div
-                    className="absolute inset-0 bg-gradient-to-t from-coal/90 via-coal/20 to-transparent"
+                    className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent"
                     aria-hidden="true"
                   />
-                  <div className="absolute bottom-0 left-0 p-6 sm:p-7">
-                    <p className="text-2xl font-bold uppercase tracking-wide text-white sm:text-3xl">
+                  <div className="absolute bottom-0 left-0 p-6 sm:p-8">
+                    <p className="text-3xl font-bold uppercase tracking-wide text-white sm:text-4xl">
                       {m.name}
                     </p>
-                    <p className="mt-1.5 text-xs text-zinc-300 sm:text-sm">
+                    <p className="mt-2 text-sm text-zinc-200 sm:text-base">
                       {m.subtitle}
                     </p>
                   </div>
-                  <span
-                    className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center bg-gold text-coal opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                    aria-hidden="true"
-                  >
-                    <ArrowRight className="h-5 w-5" />
-                  </span>
                 </Link>
               </FadeIn>
             ))}
@@ -204,23 +197,23 @@ export default function HomePage() {
             </p>
           </FadeIn>
 
-          <div className="mt-14 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-14 grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
             {ADVANTAGES.map((a, i) => {
               const Icon = HOME_ICONS[i] ?? a.icon;
               return (
                 <FadeIn key={a.title} delay={Math.min(i * 0.08, 0.3)}>
                   <div className="flex items-start gap-5">
                     <span
-                      className="flex h-20 w-20 shrink-0 items-center justify-center bg-gold text-coal"
+                      className="flex h-16 w-16 shrink-0 items-center justify-center bg-gold text-coal sm:h-24 sm:w-24"
                       aria-hidden="true"
                     >
-                      <Icon className="h-9 w-9" strokeWidth={1.8} />
+                      <Icon className="h-7 w-7 sm:h-10 sm:w-10" strokeWidth={1.8} />
                     </span>
                     <div>
-                      <h3 className="text-lg font-bold leading-snug text-foreground">
+                      <h3 className="text-lg font-bold leading-snug text-foreground sm:text-xl">
                         {a.title}
                       </h3>
-                      <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+                      <p className="mt-2 text-xs leading-relaxed text-zinc-400 sm:text-sm">
                         {a.description}
                       </p>
                     </div>
@@ -240,7 +233,7 @@ export default function HomePage() {
       </section>
 
       {/* ================= ИНДИВИДУАЛЬНАЯ РАЗРАБОТКА ================= */}
-      <section className="border-y border-white/10 bg-coal-light py-20 md:py-24">
+      <section className="bg-coal py-20 md:py-24">
         <div className="container-site grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
           <FadeIn>
             <div className="relative aspect-[4/3] overflow-hidden">
@@ -256,7 +249,7 @@ export default function HomePage() {
 
           <div>
             <FadeIn>
-              <h2 className="text-3xl font-bold uppercase leading-tight tracking-tight sm:text-4xl">
+              <h2 className="text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
                 Разработаем защиту под ваш автомобиль
               </h2>
             </FadeIn>
@@ -294,7 +287,7 @@ export default function HomePage() {
         <div className="container-site grid gap-12 lg:grid-cols-2 lg:gap-16">
           <div>
             <FadeIn>
-              <h2 className="text-3xl font-bold uppercase leading-tight tracking-tight text-coal sm:text-4xl">
+              <h2 className="text-3xl font-bold leading-tight tracking-tight text-coal sm:text-4xl">
                 Подберём защиту под ваш автомобиль
               </h2>
             </FadeIn>

@@ -80,12 +80,6 @@ export function LoginForm() {
         )}
         Войти
       </Button>
-
-      <p className="flex items-start gap-2 bg-white/5 p-3 text-xs text-zinc-400">
-        <Shield className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold" aria-hidden="true" />
-        Логин и пароль задаются на бэкенде переменными окружения
-        ADMIN_USERNAME и ADMIN_PASSWORD (см. .env бэкенд-репозитория).
-      </p>
     </form>
   );
 }

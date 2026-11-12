@@ -8,7 +8,7 @@ import { CONTACT_EMAIL, CONTACT_PHONE } from "@/lib/validation";
 export const metadata: Metadata = {
   title: "Контакты",
   description:
-    "Свяжитесь с TUNING/304: телефон, почта, мессенджеры. Проконсультируем по защите бамперов, установке и доставке по всей России.",
+    "Свяжитесь с Гранфорт: телефон, почта, мессенджеры. Проконсультируем по защите бамперов, установке и доставке по всей России.",
 };
 
 const CONTACTS = [
@@ -29,7 +29,7 @@ const CONTACTS = [
   {
     icon: MessageCircle,
     label: "Telegram / VK",
-    value: "@tuning304_placeholder",
+    value: "@granfort_placeholder",
     href: "#",
     note: "мессенджеры — заглушка",
   },

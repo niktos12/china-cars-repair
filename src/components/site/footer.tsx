@@ -4,12 +4,11 @@ import { Mail, Phone } from "lucide-react";
 import { Logo } from "@/components/site/logo";
 import { CONTACT_EMAIL, CONTACT_PHONE } from "@/lib/validation";
 
+/* Ссылки в подвале — как в макете */
 const FOOTER_LINKS = [
   { href: "/products", label: "Продукция" },
-  { href: "/about", label: "О компании" },
-  { href: "/advantages", label: "Преимущества" },
+  { href: "/about", label: "О производстве" },
   { href: "/custom", label: "На заказ" },
-  { href: "/contacts", label: "Контакты" },
 ];
 
 /* --- Иконки соцсетей (VK и Telegram отсутствуют в lucide — рисуем сами) --- */
@@ -52,7 +51,7 @@ export function Footer() {
       <div className="container-site grid gap-10 py-12 md:grid-cols-[1.2fr_1fr_1fr] md:py-16">
         {/* Бренд */}
         <div>
-          <Logo />
+          <Logo withTagline={false} />
           <p className="mt-5 max-w-xs text-sm leading-relaxed text-zinc-400">
             Безопасный и улучшенный автомобильный тюнинг
             <br />
@@ -122,7 +121,7 @@ export function Footer() {
       <div className="border-t border-white/10">
         <div className="container-site flex flex-col gap-1.5 py-5 text-xs text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
           <span>
-            © {new Date().getFullYear()} TUNING/304. Все права защищены.
+            © {new Date().getFullYear()} Гранфорт. Все права защищены.
           </span>
           <span>
             Название бренда, контакты и цены — заглушки, финальные данные

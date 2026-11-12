@@ -17,13 +17,7 @@ const FILTERS: { value: Filter; label: string }[] = [
   ...CAR_MODELS.map((m) => ({ value: m as Filter, label: m })),
 ];
 
-/**
- * Каталог: SWR запрашивает GET /api/products у отдельного бэкенда
- * (адрес — NEXT_PUBLIC_API_URL), бэкенд достаёт данные из Postgres
- * или отдаёт демо-набор, если запущен без БД.
- *
- * initialModel приходит из ?model=... (карточки моделей на главной).
- */
+/** Каталог: SWR + GET /api/products. initialModel приходит из ?model=... */
 export function ProductsClient({ initialModel = "all" }: { initialModel?: string }) {
   const { data, error, isLoading, mutate } = useSWR<ProductsResponse>(
     "/api/products",
@@ -66,7 +60,8 @@ export function ProductsClient({ initialModel = "all" }: { initialModel?: string
       <div className="mt-10 flex flex-col items-center gap-4 border border-red-500/30 bg-red-500/10 p-10 text-center">
         <AlertTriangle className="h-8 w-8 text-red-500" aria-hidden="true" />
         <p className="text-sm text-red-200">
-          Не удалось загрузить каталог: {(error as Error).message}
+          Не удалось загрузить каталог. Сервис временно недоступен —
+          попробуйте позже.
         </p>
         <button type="button" onClick={() => mutate()} className="btn-outline-gold">
           <RefreshCw className="h-4 w-4" aria-hidden="true" />
@@ -78,17 +73,6 @@ export function ProductsClient({ initialModel = "all" }: { initialModel?: string
 
   return (
     <>
-      {data?.demo && (
-        <div className="mt-8 flex items-start gap-3 border border-gold/40 bg-gold/10 p-4 text-sm text-gold">
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-          <p>
-            <span className="font-semibold">Демо-режим бэкенда.</span> База
-            данных не подключена, показаны демо-позиции. После подключения
-            PostgreSQL (DATABASE_URL) каталог будет загружаться из БД.
-          </p>
-        </div>
-      )}
-
       {/* Фильтр по модели авто */}
       <div
         className="mt-10 flex flex-wrap gap-3"

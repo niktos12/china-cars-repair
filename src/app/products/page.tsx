@@ -5,7 +5,7 @@ import { ProductsClient } from "./products-client";
 export const metadata: Metadata = {
   title: "Продукция",
   description:
-    "Каталог защиты бамперов TUNING/304: готовые комплекты для JAC T9 и Haval H3 из нержавеющей стали AISI 304 и чёрного металла с порошковым покрытием. Индивидуальное изготовление под другие модели.",
+    "Каталог защиты бамперов Гранфорт: готовые комплекты для JAC T9 и Haval H3 из нержавеющей стали AISI 304 и чёрного металла с порошковым покрытием. Индивидуальное изготовление под другие модели.",
 };
 
 export default async function ProductsPage({

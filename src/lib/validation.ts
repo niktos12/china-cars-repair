@@ -1,10 +1,7 @@
 import { z } from "zod";
 
-/**
- * Zod-схема заявки. Единый источник правды:
- *  - на клиенте через неё валидируется форма (react-hook-form);
- *  - на сервере — данные в Server Action и в REST-роуте.
- */
+/** Zod-схемы форм. На клиенте валидирует react-hook-form,
+ *  бэкенд повторно валидирует своей схемой. */
 export const leadSchema = z.object({
   name: z
     .string()
@@ -34,10 +31,8 @@ export const leadSchema = z.object({
 
 export type LeadInput = z.infer<typeof leadSchema>;
 
-/**
- * Схема товара для формы админки. Цена — строка (поле input),
- * серверный экшен приводит её к number | null перед записью в БД.
- */
+/** Схема товара в админке. Цена — строка из input,
+ *  перед отправкой приводится к number | null. */
 export const productFormSchema = z.object({
   slug: z
     .string()
@@ -80,4 +75,4 @@ export type AdminLoginInput = z.infer<typeof adminLoginSchema>;
 
 /** Телефон для шапки/подвала — заглушка из ТЗ, заменить на реальный. */
 export const CONTACT_PHONE = "+7 (900) 123-45-67";
-export const CONTACT_EMAIL = "info@tuning304.example";
+export const CONTACT_EMAIL = "info@granfort.example";

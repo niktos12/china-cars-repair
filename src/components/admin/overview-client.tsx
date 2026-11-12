@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import useSWR from "swr";
-import { ArrowRight, AlertTriangle, Loader2, Mail, Package, ShieldAlert } from "lucide-react";
+import { ArrowRight, AlertTriangle, Loader2, Mail, Package } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { adminFetcher, AuthError } from "@/lib/api";
@@ -17,10 +17,7 @@ function formatDate(iso: string): string {
   }).format(new Date(iso));
 }
 
-/**
- * Обзор админки: счётчики товаров и заявок + последняя заявка.
- * Данные — GET /api/admin/products и GET /api/admin/leads (Bearer-токен).
- */
+/** Обзор админки: счётчики товаров и заявок + последняя заявка. */
 export function OverviewClient() {
   const products = useSWR<AdminProductsResponse>(
     "/api/admin/products",
@@ -37,7 +34,9 @@ export function OverviewClient() {
       <div className="mt-10 flex flex-col items-center gap-4 border border-red-500/30 bg-red-500/10 p-10 text-center">
         <AlertTriangle className="h-8 w-8 text-red-500" aria-hidden="true" />
         <p className="text-sm text-red-200">
-          Не удалось загрузить данные: {(err as Error).message}
+          {err instanceof AuthError
+            ? "Сессия истекла. Войдите заново."
+            : "Не удалось загрузить данные. Сервис временно недоступен."}
         </p>
         {err instanceof AuthError && (
           <Link href="/admin/login" className="btn-outline-gold">
@@ -52,13 +51,13 @@ export function OverviewClient() {
     return (
       <div className="flex min-h-[40vh] items-center justify-center gap-3 text-zinc-400">
         <Loader2 className="h-5 w-5 animate-spin text-gold" aria-hidden="true" />
-        <span className="text-sm">Загружаем данные с бэкенда...</span>
+        <span className="text-sm">Загружаем данные...</span>
       </div>
     );
   }
 
-  const { products: list, demo: productsDemo } = products.data;
-  const { leads: leadsList, demo: leadsDemo } = leads.data;
+  const { products: list } = products.data;
+  const { leads: leadsList } = leads.data;
   const activeCount = list.filter((p) => p.isActive).length;
   const lastLead = leadsList[0];
 
@@ -82,17 +81,6 @@ export function OverviewClient() {
   return (
     <div>
       <h1 className="text-2xl font-bold tracking-tight">Обзор</h1>
-
-      {(productsDemo || leadsDemo) && (
-        <div className="mt-4 flex items-start gap-3 border border-gold/40 bg-gold/10 p-4 text-sm text-gold">
-          <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-          <p>
-            Демо-режим: бэкенд запущен без БД, данные демонстрационные.
-            После подключения PostgreSQL (DATABASE_URL) здесь будут реальные
-            товары и заявки.
-          </p>
-        </div>
-      )}
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
         {stats.map((s) => (

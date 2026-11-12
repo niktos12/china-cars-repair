@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Car } from "lucide-react";
 
@@ -8,25 +9,22 @@ function formatPrice(priceFrom: number | null) {
   return `от ${new Intl.NumberFormat("ru-RU").format(priceFrom)} ₽`;
 }
 
-/**
- * Карточка товара каталога в стиле референса: фото сверху,
- * информация на тёмной панели, цена золотом.
- * Вся карточка — ссылка на страницу товара /products/<slug>.
- */
+/** Карточка товара каталога. Вся карточка — ссылка на страницу товара. */
 export function ProductCard({ product }: { product: ProductDto }) {
   return (
     <Link
       href={`/products/${product.slug}`}
       className="group flex h-full flex-col overflow-hidden border border-white/10 bg-panel transition-colors duration-200 hover:border-gold/60"
     >
-      {/* Фото товара (или заглушка, пока imageUrl не задан в админке) */}
+      {/* Фото товара (или заглушка, пока imageUrl не задан) */}
       <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-[#2a2a2a] via-[#242424] to-[#1f1f1f]">
         {product.imageUrl ? (
-          <img
+          <Image
             src={product.imageUrl}
             alt={product.title}
-            loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            fill
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-2 text-zinc-500">

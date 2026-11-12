@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -86,10 +87,13 @@ export default async function ProductPage({ params }: Props) {
           <FadeIn>
             <div className="relative aspect-[4/3] overflow-hidden border border-white/10 bg-gradient-to-br from-[#2a2a2a] via-[#242424] to-[#1f1f1f]">
               {product.imageUrl ? (
-                <img
+                <Image
                   src={product.imageUrl}
                   alt={product.title}
-                  className="h-full w-full object-cover"
+                  fill
+                  priority
+                  sizes="(min-width: 1024px) 50vw, 100vw"
+                  className="object-cover"
                 />
               ) : (
                 <div className="flex h-full flex-col items-center justify-center gap-3 text-zinc-500">

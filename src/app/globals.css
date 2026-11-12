@@ -43,7 +43,7 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  /* ===== Брендовые цвета TUNING/304 (сняты с референса) ===== */
+  /* ===== Брендовые цвета Гранфорт ===== */
   --color-gold: #d4af37;
   --color-gold-light: #e6c65c;
   --color-coal: #1a1a1a;
@@ -139,4 +139,19 @@
   .panel-paper {
     @apply bg-paper text-coal;
   }
+}
+
+/* ---- Lenis: плавный скролл ---- */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
 }

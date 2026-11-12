@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { AdminGate } from "@/components/admin/admin-gate";
 
 export const metadata: Metadata = {
-  title: { default: "Админ-панель", template: "%s — Админка TUNING/304" },
+  title: { default: "Админ-панель", template: "%s — Админка Гранфорт" },
   robots: { index: false, follow: false },
 };
 

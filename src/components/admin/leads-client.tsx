@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import useSWR from "swr";
-import { AlertTriangle, Loader2, ShieldAlert } from "lucide-react";
+import { AlertTriangle, Loader2 } from "lucide-react";
 
 import { DeleteLeadButton } from "@/components/admin/delete-buttons";
 import { Badge } from "@/components/ui/badge";
@@ -40,7 +40,9 @@ export function LeadsClient() {
       <div className="mt-10 flex flex-col items-center gap-4 border border-red-500/30 bg-red-500/10 p-10 text-center">
         <AlertTriangle className="h-8 w-8 text-red-500" aria-hidden="true" />
         <p className="text-sm text-red-200">
-          Не удалось загрузить заявки: {(error as Error).message}
+          {error instanceof AuthError
+            ? "Сессия истекла. Войдите заново."
+            : "Не удалось загрузить заявки. Сервис временно недоступен."}
         </p>
         {error instanceof AuthError && (
           <Link href="/admin/login" className="btn-outline-gold">
@@ -60,7 +62,7 @@ export function LeadsClient() {
     );
   }
 
-  const { leads, demo } = data;
+  const { leads } = data;
 
   return (
     <div>
@@ -69,16 +71,6 @@ export function LeadsClient() {
         Обращения с форм на страницах «Контакты», «Индивидуальное изготовление»
         и из карточек товаров. Новые — сверху.
       </p>
-
-      {demo && (
-        <div className="mt-4 flex items-start gap-3 border border-gold/40 bg-gold/10 p-4 text-sm text-gold">
-          <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-          <p>
-            Демо-режим: бэкенд без БД — заявки демонстрационные. Подключите
-            PostgreSQL, чтобы видеть реальные обращения.
-          </p>
-        </div>
-      )}
 
       {leads.length === 0 ? (
         <p className="mt-8 rounded-lg border bg-zinc-100 p-8 text-center text-sm text-zinc-500">
