@@ -117,18 +117,6 @@ export function Footer() {
           </Link>
         </div>
       </div>
-
-      <div className="border-t border-white/10">
-        <div className="container-site flex flex-col gap-1.5 py-5 text-xs text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
-          <span>
-            © {new Date().getFullYear()} Гранфорт. Все права защищены.
-          </span>
-          <span>
-            Название бренда, контакты и цены — заглушки, финальные данные
-            согласуются.
-          </span>
-        </div>
-      </div>
     </footer>
   );
 }

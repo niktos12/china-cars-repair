@@ -1,10 +1,10 @@
 import {
-  Globe,
   PackageCheck,
-  PenLine,
+  SquarePen,
   ShieldCheck,
   Truck,
   Wrench,
+  Earth,
   type LucideIcon,
 } from "lucide-react";
 
@@ -33,7 +33,7 @@ export const ADVANTAGES: Advantage[] = [
       "Возможность приобрести комплект отдельно или заказать установку под ключ.",
   },
   {
-    icon: PenLine,
+    icon: SquarePen,
     title: "Индивидуальная разработка",
     description: "Индивидуальная разработка под другие модели автомобилей.",
   },
@@ -43,7 +43,7 @@ export const ADVANTAGES: Advantage[] = [
     description: "Возможность доставки продукции по всей России.",
   },
   {
-    icon: Globe,
+    icon: Earth,
     title: "Специализация",
     description: "Специализация на китайском автопроме.",
   },

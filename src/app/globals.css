@@ -56,6 +56,12 @@
   Сайт выполнен в постоянной тёмной теме (фон #1a1a1a, золото #d4af37).
   Светлые секции задаются классом bg-paper.
 */
+blockquote{
+  font-family: var(--font-days), monospace;
+}
+h1{
+  font-family: var(--font-days), monospace;
+}
 :root {
   --radius: 0.375rem;
   --background: #1a1a1a;
@@ -110,7 +116,7 @@
 @layer components {
   /* ---- Контейнер сайта ---- */
   .container-site {
-    @apply mx-auto w-full max-w-6xl px-4 sm:px-6;
+    @apply mx-auto w-full max-w-[1560px] px-4 sm:px-6 lg:px-8;
   }
 
   /* ---- Кнопки в стиле референса ---- */

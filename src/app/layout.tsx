@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Comfortaa, Inter } from "next/font/google";
+import { Comfortaa, Inter, Days_One } from "next/font/google";
 import "./globals.css";
 
 import { Footer } from "@/components/site/footer";
@@ -21,7 +21,11 @@ const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin", "cyrillic"],
 });
-
+const days = Days_One({
+  variable: "--font-days",
+  weight:"400",
+  subsets: ["latin", "cyrillic"],
+})
 export const metadata: Metadata = {
   title: {
     default:
@@ -62,7 +66,7 @@ export default function RootLayout({
   return (
     <html lang="ru" suppressHydrationWarning>
       <body
-        className={`${comfortaa.variable} ${inter.variable} flex min-h-screen flex-col bg-coal font-sans text-foreground antialiased`}
+        className={`${comfortaa.variable} ${inter.variable} ${days.variable} flex min-h-screen flex-col bg-coal font-sans text-foreground antialiased`}
       >
         <SmoothScroll />
         <Navbar />
