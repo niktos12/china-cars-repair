@@ -239,7 +239,7 @@ export default function HomePage() {
         <div className="container-site grid min-h-screen items-center gap-10 py-16 sm:py-20 lg:h-screen lg:grid-cols-[6fr_5fr] lg:gap-14">
           {/* Фото на всю высоту блока */}
           <FadeIn className="h-full self-center">
-            <div className="relative h-72 overflow-hidden sm:h-96 lg:h-[80vh] lg:max-h-[720px]">
+            <div className="relative h-72 overflow-hidden sm:h-96 lg:h-[80vh] lg:max-h-[720px] min-md:mt-40">
               <Image
                 src="/images/custom.png"
                 alt="Индивидуальная разработка защиты — стальное колесо крупным планом"
@@ -250,7 +250,7 @@ export default function HomePage() {
             </div>
           </FadeIn>
 
-          <div>
+          <div className="self-center flex flex-col">
             <FadeIn>
               <h2 className="text-3xl font-bold leading-[1.15] tracking-tight sm:text-4xl lg:text-5xl">
                 Разработаем защиту под ваш автомобиль
