@@ -1,21 +1,33 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 import { adminMe, AuthError, getStoredToken } from "@/lib/api";
-
-import { AdminNav } from "./admin-nav";
+import {
+  AdminThemeProvider,
+  AdminUserProvider,
+  useAdminTheme,
+} from "@/components/admin/admin-context";
+import { AdminBar } from "@/components/admin/admin-nav";
 
 /**
- * Привратник админки (заменила серверную сессию на проверку JWT).
- * На монтировании проверяет токен запросом GET /api/admin/me:
- *  - валиден  → рендерит навигацию и содержимое;
+ * Привратник админки. На монтировании проверяет токен запросом
+ * GET /api/admin/me:
+ *  - валиден  → рендерит содержимое (шапка и подвал сайта — из root layout);
  *  - нет/401  → редирект на /admin/login.
+ *
+ * Имя администратора доступно потомкам через useAdminUser().
+ * Полоса навигации AdminBar показывается на внутренних страницах,
+ * а обзор /admin остаётся чистым — навигация в шестерёнке.
+ *
+ * Зона контента обёрнута в .adm-theme + data-theme: тёмная/светлая тема
+ * применяется ТОЛЬКО к админке, шапка и подвал сайта остаются тёмными.
  */
 export function AdminGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [status, setStatus] = useState<"checking" | "ok">("checking");
   const [username, setUsername] = useState("");
 
@@ -51,7 +63,7 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
   if (status !== "ok") {
     return (
       <div
-        className="flex min-h-[60vh] items-center justify-center gap-3 text-zinc-400"
+        className="flex min-h-[50vh] items-center justify-center gap-3 text-zinc-400"
         role="status"
         aria-live="polite"
       >
@@ -61,12 +73,40 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
     );
   }
 
+  const isOverview = pathname === "/admin";
+
   return (
-    <div className="flex min-h-[60vh] flex-col">
-      <AdminNav username={username} />
-      <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6">
+    <AdminThemeProvider>
+      <AdminScope username={username} isOverview={isOverview}>
         {children}
+      </AdminScope>
+    </AdminThemeProvider>
+  );
+}
+
+/**
+ * Внутренняя обёртка: подключается к контексту темы и вешает
+ * data-theme на зону контента админки.
+ */
+function AdminScope({
+  username,
+  isOverview,
+  children,
+}: {
+  username: string;
+  isOverview: boolean;
+  children: React.ReactNode;
+}) {
+  const { theme } = useAdminTheme();
+
+  return (
+    <AdminUserProvider value={username}>
+      <div className="adm-theme flex min-h-full flex-col" data-theme={theme}>
+        {!isOverview && <AdminBar />}
+        <div className="container-site flex-1 py-10 sm:py-14 lg:py-16">
+          {children}
+        </div>
       </div>
-    </div>
+    </AdminUserProvider>
   );
 }

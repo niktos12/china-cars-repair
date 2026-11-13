@@ -56,12 +56,6 @@
   Сайт выполнен в постоянной тёмной теме (фон #1a1a1a, золото #d4af37).
   Светлые секции задаются классом bg-paper.
 */
-blockquote{
-  font-family: var(--font-days), monospace;
-}
-h1{
-  font-family: var(--font-days), monospace;
-}
 :root {
   --radius: 0.375rem;
   --background: #1a1a1a;
@@ -114,7 +108,8 @@ h1{
 }
 
 @layer components {
-  /* ---- Контейнер сайта ---- */
+  /* ---- Контейнер сайта: единые поля на всех секциях ----
+     1920+ → (1920-1560)/2 = 180px по бокам, на средних — полная ширина с паддингами */
   .container-site {
     @apply mx-auto w-full max-w-[1560px] px-4 sm:px-6 lg:px-8;
   }
@@ -144,6 +139,151 @@ h1{
   /* ---- Панель светлой секции ---- */
   .panel-paper {
     @apply bg-paper text-coal;
+  }
+
+  /* ====================================================================
+     Тема админки. Зона контента админки оборачивается в .adm-theme:
+     тёмная тема — по умолчанию, светлая включается атрибутом
+     data-theme="light" (кнопка-переключатель, выбор хранится в
+     localStorage). Шапка и подвал сайта остаются тёмными — меняется
+     только зона админки.
+     В светлой теме дополнительно переопределяются shadcn-переменные
+     (--border, --accent, --input…), чтобы Input/Checkbox/AlertDialog
+     и скелетоны (bg-accent) внутри админки выглядели правильно.
+     ==================================================================== */
+  .adm-theme {
+    background-color: var(--adm-bg);
+    color: var(--adm-text);
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
+
+    --adm-bg: #121212;
+    --adm-panel: #1d1d1d;
+    --adm-panel-2: #242424;
+    --adm-hover: rgba(255, 255, 255, 0.05);
+    --adm-border: rgba(255, 255, 255, 0.12);
+    --adm-row: rgba(255, 255, 255, 0.08);
+    --adm-text: #f5f5f5;
+    --adm-muted: #a3a3a8;
+    --adm-faint: #7c7c83;
+    --adm-tag-bg: rgba(255, 255, 255, 0.08);
+    --adm-tag-text: #c8c8cd;
+  }
+
+  .adm-theme[data-theme="light"] {
+    --background: #ffffff;
+    --foreground: #1a1a1a;
+    --card: #ffffff;
+    --card-foreground: #1a1a1a;
+    --secondary: #f1f1f1;
+    --secondary-foreground: #1a1a1a;
+    --muted: #f1f1f1;
+    --muted-foreground: #62626a;
+    --accent: #e9e8e5;
+    --accent-foreground: #1a1a1a;
+    --border: rgba(0, 0, 0, 0.14);
+    --input: rgba(0, 0, 0, 0.28);
+
+    --adm-bg: #f2f1ee;
+    --adm-panel: #ffffff;
+    --adm-panel-2: #f7f6f3;
+    --adm-hover: rgba(0, 0, 0, 0.045);
+    --adm-border: rgba(0, 0, 0, 0.14);
+    --adm-row: rgba(0, 0, 0, 0.09);
+    --adm-text: #1a1a1a;
+    --adm-muted: #5f5f66;
+    --adm-faint: #90909a;
+    --adm-tag-bg: rgba(0, 0, 0, 0.06);
+    --adm-tag-text: #55555c;
+  }
+
+  /* Панель (карточка) внутри зоны админки */
+  .adm-panel {
+    background-color: var(--adm-panel);
+    border: 1px solid var(--adm-border);
+    color: var(--adm-text);
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease;
+  }
+  /* Мягкая подложка: теги-заготовки, треки прогресса, превью фото */
+  .adm-soft {
+    background-color: var(--adm-tag-bg);
+  }
+  .adm-muted {
+    color: var(--adm-muted);
+  }
+  .adm-faint {
+    color: var(--adm-faint);
+  }
+  /* Нейтральный тег (источник заявки, имя админа) */
+  .adm-tag {
+    background-color: var(--adm-tag-bg);
+    color: var(--adm-tag-text);
+  }
+  /* Разделитель строк списков */
+  .adm-rows > * + * {
+    border-top: 1px solid var(--adm-row);
+  }
+  /* Иконка-кнопка в списках (…, корзина, внешняя ссылка) */
+  .adm-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--adm-muted);
+    transition:
+      color 0.2s ease,
+      background-color 0.2s ease;
+  }
+  .adm-icon-btn:hover {
+    color: var(--adm-text);
+    background-color: var(--adm-hover);
+  }
+  /* Кнопка пагинации */
+  .adm-page-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.25rem;
+    min-width: 2.25rem;
+    padding: 0 0.625rem;
+    border: 1px solid var(--adm-border);
+    color: var(--adm-muted);
+    font-size: 0.875rem;
+    line-height: 1;
+    transition:
+      color 0.2s ease,
+      background-color 0.2s ease,
+      border-color 0.2s ease;
+  }
+  .adm-page-btn:hover:not(:disabled) {
+    color: var(--adm-text);
+    background-color: var(--adm-hover);
+  }
+  .adm-page-btn:disabled {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  /* Строка заявки: на мобильных две зоны (аватар+кто, мета), на lg+ —
+     шесть выровненных колонок: аватар | кто | дата | бейдж | источник | ✕ */
+  .adm-lead-row {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr);
+    grid-template-areas:
+      "avatar main"
+      "meta meta";
+    column-gap: 1rem;
+    row-gap: 0.875rem;
+    align-items: center;
+  }
+  @media (min-width: 1024px) {
+    .adm-lead-row {
+      grid-template-columns: 44px minmax(0, 1fr) 148px 84px 210px 40px;
+      grid-template-areas: "avatar main date badge source actions";
+      row-gap: 0;
+    }
   }
 }
 

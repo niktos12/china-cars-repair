@@ -113,7 +113,7 @@ export function ProductForm({
             aria-invalid={!!errors.slug}
             {...register("slug")}
           />
-          <p className="text-xs text-zinc-500">
+          <p className="adm-faint text-xs">
             Страница товара: /products/&lt;slug&gt;. Латиница, цифры, дефис.
           </p>
           {errors.slug && (
@@ -192,7 +192,7 @@ export function ProductForm({
           <Label htmlFor="p-image">Фото (ссылка)</Label>
           <div className="relative">
             <ImagePlus
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500"
+              className="adm-faint pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2"
               aria-hidden="true"
             />
             <Input
@@ -205,7 +205,7 @@ export function ProductForm({
               })}
             />
           </div>
-          <p className="text-xs text-zinc-500">
+          <p className="adm-faint text-xs">
             Путь в /public (например, /images/jac-t9.jpg) или внешний URL.
             Пусто — в карточке будет заглушка с иконкой.
           </p>
@@ -213,7 +213,7 @@ export function ProductForm({
             <p className="text-xs text-red-500" role="alert">{errors.imageUrl.message}</p>
           )}
         </div>
-        <div className="flex aspect-[4/3] items-center justify-center overflow-hidden border border-white/10 bg-white/5">
+        <div className="adm-soft flex aspect-[4/3] items-center justify-center overflow-hidden border border-(--adm-border)">
           {imageUrl ? (
             <img
               src={imageUrl}
@@ -221,7 +221,7 @@ export function ProductForm({
               className="h-full w-full object-cover"
             />
           ) : (
-            <span className="text-xs text-zinc-600">предпросмотр</span>
+            <span className="adm-faint text-xs">предпросмотр</span>
           )}
         </div>
       </div>
@@ -257,11 +257,11 @@ export function ProductForm({
         </Label>
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex flex-wrap gap-3">
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="bg-gold font-semibold text-coal hover:bg-gold-light"
+          className="w-full bg-gold font-semibold text-coal hover:bg-gold-light sm:w-auto"
         >
           {isSubmitting ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
@@ -270,7 +270,12 @@ export function ProductForm({
           )}
           {productId ? "Сохранить изменения" : "Создать товар"}
         </Button>
-        <Button type="button" variant="outline" onClick={() => router.back()}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => router.back()}
+          className="w-full sm:w-auto"
+        >
           Отмена
         </Button>
       </div>

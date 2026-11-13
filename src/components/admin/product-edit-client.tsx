@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import useSWR from "swr";
-import { AlertTriangle, ArrowLeft, Loader2 } from "lucide-react";
+import { AlertTriangle, ArrowLeft } from "lucide-react";
 
 import { ProductForm } from "@/components/admin/product-form";
+import { AdminFormSkeleton } from "@/components/admin/skeletons";
 import { adminFetcher, AuthError } from "@/lib/api";
 import type { AdminProductsResponse } from "@/lib/types";
 
@@ -37,9 +38,11 @@ export function ProductEditClient({ id }: { id: number }) {
 
   if (isLoading || !data) {
     return (
-      <div className="flex min-h-[40vh] items-center justify-center gap-3 text-zinc-400">
-        <Loader2 className="h-5 w-5 animate-spin text-gold" aria-hidden="true" />
-        <span className="text-sm">Загружаем товар...</span>
+      <div className="max-w-3xl">
+        <p className="adm-muted text-sm" role="status" aria-live="polite">
+          Загружаем товар…
+        </p>
+        <AdminFormSkeleton className="mt-6" />
       </div>
     );
   }
@@ -51,11 +54,11 @@ export function ProductEditClient({ id }: { id: number }) {
       <div className="max-w-3xl">
         <Link
           href="/admin/products"
-          className="mb-4 inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-gold"
+          className="adm-faint mb-4 inline-flex items-center gap-1 text-sm transition-colors hover:text-gold"
         >
           К списку товаров
         </Link>
-        <p className="rounded-lg border bg-zinc-100 p-8 text-center text-sm text-zinc-500">
+        <p className="adm-panel adm-muted p-8 text-center text-sm">
           Товар с ID #{id} не найден — возможно, он был удалён.
         </p>
       </div>
@@ -66,14 +69,14 @@ export function ProductEditClient({ id }: { id: number }) {
     <div className="max-w-3xl">
       <Link
         href="/admin/products"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-gold"
+        className="adm-faint mb-4 inline-flex items-center gap-1 text-sm transition-colors hover:text-gold"
       >
         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
         К списку товаров
       </Link>
 
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-bold tracking-tight">Редактирование товара</h1>
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Редактирование товара</h1>
         {product.isActive && (
           <Link
             href={`/products/${product.slug}`}
@@ -84,14 +87,21 @@ export function ProductEditClient({ id }: { id: number }) {
           </Link>
         )}
       </div>
-      <p className="mt-1 text-sm text-zinc-500">
-        ID #{product.id} · создан{" "}
-        {new Intl.DateTimeFormat("ru-RU", { dateStyle: "long" }).format(
-          new Date(product.createdAt),
-        )}
+      <p className="adm-faint mt-1 text-sm">
+        ID #{product.id}
+        {/* Демо-режим бэкенда может не отдавать дату создания */}
+        {product.createdAt &&
+          !Number.isNaN(new Date(product.createdAt).getTime()) && (
+            <>
+              {" · создан "}
+              {new Intl.DateTimeFormat("ru-RU", { dateStyle: "long" }).format(
+                new Date(product.createdAt),
+              )}
+            </>
+          )}
       </p>
 
-      <div className="mt-6 border border-white/10 bg-panel p-6 md:p-8">
+      <div className="adm-panel mt-6 p-6 md:p-8">
         <ProductForm
           productId={product.id}
           defaultValues={{
