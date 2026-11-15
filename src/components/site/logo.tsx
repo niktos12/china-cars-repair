@@ -57,7 +57,7 @@ export function Logo({
       <LogoMark className="h-10 w-10 shrink-0 transition-transform duration-300 group-hover:rotate-45" />
       <span className="flex flex-col leading-none">
         <span className="text-lg font-bold tracking-wide text-foreground">
-          Гранф<span className="text-gold">орт</span>
+          Гран<span className="text-gold">форт</span>
         </span>
         {withTagline && (
           <span className="mt-1 text-[10px] tracking-wide text-zinc-400">
