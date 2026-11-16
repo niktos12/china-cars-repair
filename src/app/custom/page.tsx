@@ -55,7 +55,7 @@ export default function CustomPage() {
           <FadeIn delay={0.15}>
             <div className="relative aspect-[4/3] overflow-hidden border border-white/10">
               <Image
-                src="/images/custom.jpg"
+                src="/images/custom.png"
                 alt="Стальное изделие крупным планом — индивидуальная разработка"
                 fill
                 priority
