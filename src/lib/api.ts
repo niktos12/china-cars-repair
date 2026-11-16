@@ -1,10 +1,13 @@
 /**
- * Клиент API бэкенда (адрес — NEXT_PUBLIC_API_URL).
+ * Клиент API бэкенда (адрес(а) — NEXT_PUBLIC_API_URLS или NEXT_PUBLIC_API_URL).
  * Публичные запросы — без авторизации; админ-API — с JWT: POST /api/admin/login
  * возвращает токен, он хранится в localStorage и идёт заголовком
  * Authorization: Bearer. 401 выбрасывает AuthError — код отправляет на /admin/login.
+ *
+ * GET-запросы летят на все бэкенды сразу (raceGet — побеждает первый ответ),
+ * записи (POST/PUT/DELETE) — на первый бэкенд с фолбэком на второй (fallbackWrite).
  */
-import { requireApiBase } from "./fetcher";
+import { ApiHttpError, errorMessage, fallbackWrite, raceGet } from "./fetcher";
 import type {
   AdminLeadsResponse,
   AdminLoginResponse,
@@ -18,34 +21,13 @@ import type {
   ProductsResponse,
 } from "./types";
 
-const STATUS_TEXT: Record<number, string> = {
-  400: "Проверьте правильность заполненных данных",
-  404: "Данные не найдены",
-  500: "Ошибка сервера, попробуйте позже",
-  503: "Сервис временно недоступен",
-};
-
-/** Текст ошибки из JSON-ответа бэкенда ({ error: "..." }) или общий текст по статусу */
-async function errorMessage(res: Response): Promise<string> {
-  try {
-    const data = (await res.json()) as { error?: string };
-    if (data?.error) return data.error;
-  } catch {
-    /* тело не JSON */
-  }
-  return (
-    STATUS_TEXT[res.status] ?? `Сервис временно недоступен (ошибка ${res.status})`
-  );
-}
-
 /* ==================================================================== */
 /* Публичное API: каталог, страница товара, заявки                       */
 /* ==================================================================== */
 
 /** GET /api/products — каталог для страницы «Продукция» (SWR) */
 export async function fetchProducts(): Promise<ProductsResponse> {
-  const res = await fetch(`${requireApiBase()}/api/products`);
-  if (!res.ok) throw new Error(await errorMessage(res));
+  const res = await raceGet("/api/products");
   return (await res.json()) as ProductsResponse;
 }
 
@@ -55,14 +37,13 @@ export async function fetchProductBySlug(
   slug: string,
 ): Promise<ProductPageResponse | null> {
   try {
-    const res = await fetch(
-      `${requireApiBase()}/api/products/${encodeURIComponent(slug)}`,
-      { cache: "no-store" },
-    );
-    if (res.status === 404) return null;
-    if (!res.ok) throw new Error(await errorMessage(res));
+    const res = await raceGet(`/api/products/${encodeURIComponent(slug)}`, {
+      cache: "no-store",
+    });
     return (await res.json()) as ProductPageResponse;
   } catch (err) {
+    /* 404 — товара действительно нет (не логируем как аварию) */
+    if (err instanceof ApiHttpError && err.status === 404) return null;
     console.error("[api] fetchProductBySlug:", err);
     return null;
   }
@@ -85,8 +66,8 @@ export async function postLead(
   values: LeadInput,
   source: string,
 ): Promise<LeadActionResult> {
-  const res = await fetch(
-    `${requireApiBase()}/api/leads?source=${encodeURIComponent(source)}`,
+  const res = await fallbackWrite(
+    `/api/leads?source=${encodeURIComponent(source)}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -96,8 +77,8 @@ export async function postLead(
   const data = (await res.json().catch(() => null)) as
     | (LeadActionResult & { error?: string })
     | null;
-  if (!res.ok || !data?.ok) {
-    throw new Error(data?.error ?? "Что-то пошло не так. Попробуйте ещё раз.");
+  if (!data?.ok) {
+    throw new Error("Что-то пошло не так. Попробуйте ещё раз.");
   }
   return data;
 }
@@ -132,34 +113,43 @@ export function clearStoredToken(): void {
 }
 
 /**
- * Запрос к /api/admin/* с Bearer-токеном. 401 → AuthError,
+ * Запрос к /api/admin/* с Bearer-токеном. GET — гонка по всем бэкендам,
+ * записи — первый бэкенд + фолбэк. 401 → AuthError,
  * остальные ошибки → Error с текстом от бэкенда.
  */
-export async function adminFetch<T>(path: string, init?: RequestInit): Promise<T> {
+export async function adminFetch<T>(
+  path: string,
+  init?: RequestInit,
+): Promise<T> {
   const headers = new Headers(init?.headers);
   headers.set("Content-Type", "application/json");
   const token = getStoredToken();
   if (token) headers.set("Authorization", `Bearer ${token}`);
+  const method = (init?.method ?? "GET").toUpperCase();
 
-  const res = await fetch(`${requireApiBase()}${path}`, { ...init, headers });
-
-  if (res.status === 401) {
-    clearStoredToken();
-    throw new AuthError();
+  let res: Response;
+  try {
+    res =
+      method === "GET"
+        ? await raceGet(path, { ...init, headers })
+        : await fallbackWrite(path, { ...init, headers });
+  } catch (err) {
+    if (err instanceof ApiHttpError && err.status === 401) {
+      clearStoredToken();
+      throw new AuthError();
+    }
+    throw new Error(errorMessage(err));
   }
 
-  const data = (await res.json().catch(() => null)) as
-    | (T & { error?: string })
-    | null;
-  if (!res.ok) {
-    throw new Error(data?.error ?? `Бэкенд ответил ошибкой ${res.status}`);
-  }
-  return data as T;
+  return (await res.json().catch(() => null)) as T;
 }
 
 /** POST /api/admin/login — обмен логин/пароль на JWT. Возвращает токен. */
-export async function adminLogin(username: string, password: string): Promise<string> {
-  const res = await fetch(`${requireApiBase()}/api/admin/login`, {
+export async function adminLogin(
+  username: string,
+  password: string,
+): Promise<string> {
+  const res = await fallbackWrite("/api/admin/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password }),
@@ -167,7 +157,7 @@ export async function adminLogin(username: string, password: string): Promise<st
   const data = (await res.json().catch(() => null)) as
     | (AdminLoginResponse & { error?: string })
     | null;
-  if (!res.ok || !data?.token) {
+  if (!data?.token) {
     throw new Error(data?.error ?? "Не удалось войти. Попробуйте ещё раз.");
   }
   return data.token;
